@@ -1,0 +1,93 @@
+﻿<main class="container">
+  <section class="panel">
+    <header class="panel-header">
+      <div>
+        <h1>Sistema de comentarios</h1>
+        <p>Consumiendo API REST de jsonplaceholder.</p>
+      </div>
+      <div class="meta">
+        <span>Comentarios cargados: <strong>{{ commentCount }}</strong></span>
+      </div>
+    </header>
+
+    <form class="comment-form" (ngSubmit)="submitComment()">
+      <h2 class="form-title">{{ formTitle }}</h2>
+
+      <label>
+        Nombre
+        <input
+          type="text"
+          [(ngModel)]="name"
+          name="name"
+          placeholder="Tu nombre"
+          required
+        />
+      </label>
+
+      <label>
+        Email
+        <input
+          type="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="Tu email"
+          required
+        />
+      </label>
+
+      <label>
+        Comentario
+        <textarea
+          [(ngModel)]="body"
+          name="body"
+          placeholder="Escribe tu comentario"
+          rows="4"
+          required
+        ></textarea>
+      </label>
+
+      <div class="form-actions">
+        <button type="submit" [disabled]="isSubmitting || !name.trim() || !email.trim() || !body.trim()">
+          {{ isSubmitting ? 'Guardando...' : submitButtonText }}
+        </button>
+        <button type="button" class="secondary-button" *ngIf="editingCommentId != null" (click)="resetForm(); editingCommentId = null; message = ''">
+          Cancelar edición
+        </button>
+      </div>
+
+      <p class="message" *ngIf="message">{{ message }}</p>
+      <p class="hint" *ngIf="lastCreatedAt">Fecha simulada del comentario creado: {{ lastCreatedAt }}</p>
+    </form>
+
+    <section class="comments-list">
+      <h2>Comentarios</h2>
+      <p class="list-note">Mostrando los primeros {{ commentCount }} comentarios de la API.</p>
+      <div class="comments-table-wrapper">
+        <table class="comments-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Comentario</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let comment of comments">
+              <td>{{ comment.id || '-' }}</td>
+              <td>{{ comment.name }}</td>
+              <td>{{ comment.email || 'sin email' }}</td>
+              <td>{{ comment.body }}</td>
+              <td>
+                <button class="edit-button" type="button" (click)="editComment(comment)">
+                  Editar
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </section>
+</main>
