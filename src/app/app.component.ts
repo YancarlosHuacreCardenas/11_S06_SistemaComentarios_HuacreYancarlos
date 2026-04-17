@@ -19,6 +19,8 @@ export class AppComponent implements OnInit {
   isSubmitting = false;
   lastCreatedAt = '';
   editingCommentId: number | null = null;
+  pageSize = 7;
+  currentPage = 1;
 
   constructor(private apiService: ApiService) {}
 
@@ -29,12 +31,26 @@ export class AppComponent implements OnInit {
   loadComments(): void {
     this.apiService.getComments().subscribe({
       next: (data) => {
-        this.comments = data.slice(0, 12);
+        this.comments = data.map((comment) => ({
+          ...comment,
+          createdAt: comment.createdAt ?? this.generateSimulatedDate(comment.id)
+        }));
+        this.currentPage = 1;
       },
       error: () => {
         this.message = 'No se pudo cargar la lista de comentarios.';
       }
     });
+  }
+
+  private generateSimulatedDate(id?: number): string {
+    if (!id) {
+      return new Date().toLocaleString('es-ES');
+    }
+
+    const date = new Date();
+    date.setDate(date.getDate() - (500 - id));
+    return date.toLocaleString('es-ES');
   }
 
   submitComment(): void {
@@ -87,6 +103,7 @@ export class AppComponent implements OnInit {
             createdAt: this.lastCreatedAt
           };
           this.comments = [newComment, ...this.comments];
+          this.currentPage = 1;
           this.message = 'Comentario enviado con éxito.';
           this.resetForm();
         },
@@ -116,6 +133,34 @@ export class AppComponent implements OnInit {
 
   get commentCount(): number {
     return this.comments.length;
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.commentCount / this.pageSize));
+  }
+
+  get pageNumbers(): number[] {
+    return Array.from({ length: this.totalPages }, (_, index) => index + 1);
+  }
+
+  get paginatedComments(): CommentItem[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.comments.slice(start, start + this.pageSize);
+  }
+
+  changePage(page: number): void {
+    if (page < 1 || page > this.totalPages) {
+      return;
+    }
+    this.currentPage = page;
+  }
+
+  nextPage(): void {
+    this.changePage(this.currentPage + 1);
+  }
+
+  prevPage(): void {
+    this.changePage(this.currentPage - 1);
   }
 
   get formTitle(): string {
